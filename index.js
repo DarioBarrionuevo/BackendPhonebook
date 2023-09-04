@@ -42,6 +42,22 @@ app.get("/api/persons/:id", (request, response) => {
     response.status(404).end();
   }
 });
+
+app.get("/api/info", (request, response) => {
+  const today = new Date();
+
+  const date =
+    today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+  const time =
+    today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  const dateTime = date + " " + time;
+
+  response.send(`Phonebook has info for ${persons.length} people
+
+  ${dateTime}
+  `);
+});
+
 // POST
 const generateId = () => {
   const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
