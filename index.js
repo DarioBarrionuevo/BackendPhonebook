@@ -63,20 +63,29 @@ const generateId = () => {
   const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
   return maxId + 1;
 };
+const generateRandomId = () => {
+  const randomId = Math.floor((Math.random() * 1000000) + 5);
+
+  return randomId
+}
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
 
-  if (!body.content) {
+  if (!body.name ) {
     return response.status(400).json({
-      error: "content missing",
+      error: "name missing",
     });
   }
-
+  if ( !body.number) {
+    return response.status(400).json({
+      error: "number missing",
+    });
+  }
   const person = {
-    content: body.content,
-    important: body.important || false,
-    id: generateId(),
+    name: body.name,
+    number: body.number,
+    id: generateRandomId(),
   };
 
   persons = persons.concat(person);
