@@ -1,6 +1,8 @@
 const express = require("express");
+const morgan = require('morgan')
 const app = express();
 app.use(express.json());
+app.use(morgan('tiny'))
 
 let persons = [
   {
@@ -53,8 +55,7 @@ app.get("/api/info", (request, response) => {
   const dateTime = date + " " + time;
 
   response.send(`Phonebook has info for ${persons.length} people
-
-  ${dateTime}
+    Time :${dateTime}
   `);
 });
 
