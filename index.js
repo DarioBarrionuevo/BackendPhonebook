@@ -11,6 +11,7 @@ app.use(
     ":method :url :status :response-time ms - :res[content-length] :body - :req[content-length]"
   )
 );
+app.use(express.static('dist'))
 app.use(express.json());
 app.use(cors());
 let persons = [
