@@ -73,30 +73,20 @@ app.get("/api/info", (request, response) => {
   `);
 });
 
-// POST
-const generateId = () => {
-  const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
-const generateRandomId = () => {
-  const randomId = Math.floor(Math.random() * 1000000 + 5);
+// CREATE NEW PERSON
+// const generateId = () => {
+//   const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
+//   return maxId + 1;
+// };
+// const generateRandomId = () => {
+//   const randomId = Math.floor(Math.random() * 1000000 + 5);
 
-  return randomId;
-};
+//   return randomId;
+// };
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
 
-  const filtered = persons.filter((person) => {
-    return person.name === body.name ? true : false;
-  });
-  if (filtered.length !== 0) {
-    return response.status(400).json({
-      error: "name must be unique",
-    });
-  }
-
-  console.log("🚀 ~ file: index.js:79 ~ filtered ~ filtered:", filtered);
   if (!body.name) {
     return response.status(400).json({
       error: "name missing",
@@ -107,15 +97,26 @@ app.post("/api/persons", (request, response) => {
       error: "number missing",
     });
   }
-  const person = {
+  // console.log("🚀 ~ file: index.js:79 ~ filtered ~ filtered:", filtered);
+  // if (!body.name) {
+  //   return response.status(400).json({
+  //     error: "name missing",
+  //   });
+  // }
+  // if (!body.number) {
+  //   return response.status(400).json({
+  //     error: "number missing",
+  //   });
+  // }
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: generateRandomId(),
-  };
+    // id: generateRandomId(),
+  });
 
-  persons = persons.concat(person);
-
-  response.json(person);
+  person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 // DELETE
