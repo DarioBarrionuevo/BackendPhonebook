@@ -2,8 +2,10 @@ const express = require("express");
 const morgan = require("morgan");
 const app = express();
 require("dotenv").config();
-
 const cors = require("cors");
+const Person = require("./models/person");
+
+
 // app.use(morgan('tiny'))
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(
@@ -36,13 +38,15 @@ let persons = [
     number: "39-23-6423122",
   },
 ];
-// GET
+// GET ROOT
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
 });
-
+// GET ALL PERSONS
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
