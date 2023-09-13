@@ -125,13 +125,16 @@ app.delete("/api/persons/:id", (request, response, next) => {
 app.put("/api/persons/:id", (request, response, next) => {
   const body = request.body;
 
-  const person = new Person({
-    name: body.name,
-    number: body.number,
-  });
+  // const person = new Person({
+  //   name: body.name,
+  //   number: body.number,
+  // });
 
-
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { name: body.name, number: body.number },
+    { new: true }
+  )
     .then((updatedPerson) => {
       response.json(updatedPerson);
     })
@@ -142,7 +145,7 @@ app.put("/api/persons/:id", (request, response, next) => {
 app.use(unknownEndpoint);
 
 const errorHandler = (error, request, response, next) => {
-  console.log("🚀 ERROR.NAME IS: ", error.name)
+  console.log("🚀 ERROR.NAME IS: ", error.name);
   console.error(error.message);
 
   if (error.name === "CastError") {
