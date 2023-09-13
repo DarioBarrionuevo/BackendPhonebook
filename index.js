@@ -5,7 +5,6 @@ require("dotenv").config();
 const cors = require("cors");
 const Person = require("./models/person");
 
-
 // app.use(morgan('tiny'))
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(
@@ -13,9 +12,14 @@ app.use(
     ":method :url :status :response-time ms - :res[content-length] :body - :req[content-length]"
   )
 );
-app.use(express.static('dist'))
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+app.use(express.static("dist"));
 app.use(express.json());
 app.use(cors());
+app.use(express.static("build"));
+
 let persons = [
   {
     id: 1,
@@ -48,17 +52,23 @@ app.get("/api/persons", (request, response) => {
     response.json(persons);
   });
 });
-
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+// GET ONE PERSON
+app.get("/api/persons/:id", (request, response, next) => {
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
+  // .catch((error) => {
+  //   console.log(error);
+  //   response.status(400).send({ error: "malformatted id" });
+  // });
 });
-
+// GET INFO
 app.get("/api/info", (request, response) => {
   const today = new Date();
 
@@ -74,30 +84,9 @@ app.get("/api/info", (request, response) => {
 });
 
 // CREATE NEW PERSON
-// const generateId = () => {
-//   const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
-//   return maxId + 1;
-// };
-// const generateRandomId = () => {
-//   const randomId = Math.floor(Math.random() * 1000000 + 5);
-
-//   return randomId;
-// };
-
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
-  if (!body.name) {
-    return response.status(400).json({
-      error: "name missing",
-    });
-  }
-  if (!body.number) {
-    return response.status(400).json({
-      error: "number missing",
-    });
-  }
-  // console.log("🚀 ~ file: index.js:79 ~ filtered ~ filtered:", filtered);
   // if (!body.name) {
   //   return response.status(400).json({
   //     error: "name missing",
@@ -108,24 +97,46 @@ app.post("/api/persons", (request, response) => {
   //     error: "number missing",
   //   });
   // }
+
   const person = new Person({
     name: body.name,
     number: body.number,
-    // id: generateRandomId(),
   });
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson);
-  });
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => next(error));
 });
 
-// DELETE
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
+// DELETE ONE NOTE
+app.delete("/api/persons/:id", (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then((result) => {
+      console.log("Deleted Person with id: ", request.params.id);
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
+
+// -------------
+
+app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.log("🚀 ERROR.NAME IS: ", error.name)
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
