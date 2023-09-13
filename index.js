@@ -85,10 +85,14 @@ app.get("/api/info", (request, response) => {
   });
 });
 
-// CREATE NEW PERSON
+// POST NEW PERSON
 app.post("/api/persons", (request, response, next) => {
   const body = request.body;
   const name = body.name;
+
+  if (name === undefined) {
+    return response.status(400).json({ error: "content missing" });
+  }
 
   Person.findOne({ name: name })
     .then((result) => {
@@ -153,8 +157,9 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
-
   next(error);
 };
 
