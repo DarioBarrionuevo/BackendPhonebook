@@ -93,7 +93,12 @@ app.post("/api/persons", (request, response, next) => {
   if (name === undefined) {
     return response.status(400).json({ error: "content missing" });
   }
+  const myPhoneRegex = /\d{2}-\d{6}/;
+  const test = myPhoneRegex.test(body.number);
 
+  if (!test) {
+    return response.status(400).json({ error: "number not valid" });
+  }
   Person.findOne({ name: name })
     .then((result) => {
       if (result === null) {
